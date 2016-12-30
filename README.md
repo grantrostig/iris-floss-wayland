@@ -20,7 +20,7 @@ sudo apt-get install libddccontrol-dev ddccontrol
 Fedora
 
 ```
-sudo dnf install libddccontrol-dev ddccontrol
+sudo dnf install ddccontrol
 ```
 
 
