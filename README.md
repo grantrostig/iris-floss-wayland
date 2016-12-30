@@ -62,6 +62,10 @@ To reset all color changes
 sudo ./iris-floss-wayland 6500 100 -v
 ```
 
-Specially for all all people who like Linux.
+# What about X11?
+There is a way better way to get the similar thing for X11. For more info go here
+http://iristech.co/iris-floss/
+
+Specially for all people who like Linux.
 
 http://iristech.co/iris-floss
