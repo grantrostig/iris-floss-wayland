@@ -180,7 +180,7 @@ int main(int argc, char **argv)
 	int verbose = 0;
 	if (argc > 3)
 	{
-		if(strcmp (argv[3],"-v") != 0)
+		if(strcmp (argv[3],"-v") == 0)
 		{
 			verbose = 1;
 		}

@@ -56,6 +56,12 @@ sudo ./iris-floss-wayland 100 10 -v
 
 Will set Color temperature to **100K** and Brightness to **10%** and will print verbose output
 
+To reset all color changes
+
+```
+sudo ./iris-floss-wayland 6500 100 -v
+```
+
 Specially for all all people who like Linux.
 
 http://iristech.co/iris-floss
