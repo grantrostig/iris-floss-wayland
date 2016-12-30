@@ -15,9 +15,18 @@
 */
 
 ////////////////////////////////////////////////////////////
-#include <X11/extensions/Xrandr.h> 
-#include <stdlib.h>
+int maximum_red = 64;
+int maximum_green = 64;
+int maximum_blue = 64;
+
+int maximum_brightness = 100;
+
+
+////////////////////////////////////////////////////////////
 #include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
 
 ////////////////////////////////////////////////////////////
 static float color_temperature[] = {
@@ -127,6 +136,12 @@ static float color_temperature[] = {
 ////////////////////////////////////////////////////////////
 int main(int argc, char **argv) 
 {
+	if(geteuid() != 0)
+	{
+		printf("You must run this program with \"sudo\"\n");
+		return -1;
+	}
+
 	// Get Color temperature
 	int temperature = 3400;
 	if (argc > 1)
@@ -152,79 +167,65 @@ int main(int argc, char **argv)
 	}
 	
 	// Validate Brightness
-	if(brightness < 0.1f)
+	if(brightness < 0.0f)
 	{
-		brightness = 0.1f;
+		brightness = 0.0f;
 	}
 	if(brightness > 1.0f) 
 	{
 		brightness = 1.0f;
 	}
 
-	// Get Monitor number
-	int monitor_number = 0;
+	// Verbose output
+	int verbose = 0;
 	if (argc > 3)
 	{
- 		monitor_number = (int)atoi(argv[3]);
-	}
-
- 	Display *dpy = XOpenDisplay(NULL);
-	int screen = DefaultScreen(dpy);
-	Window root = RootWindow(dpy, screen);
-	XRRScreenResources *res = XRRGetScreenResourcesCurrent(dpy, root);
-
-	int monitor_count = res->ncrtc;
-
-	//Validate Monitor number
-	if (monitor_number < 0) 
-	{ 
-		monitor_number = 0;
-	}
-	if (monitor_number > monitor_count)
-	{
-		monitor_number = monitor_count; 
-	}
-
-	for (int current_monitor = 0; current_monitor < monitor_count; current_monitor++) 
-	{
-		int skip = 0;
-	
-		if(monitor_number > 0)
+		if(strcmp (argv[3],"-v") != 0)
 		{
-			if(current_monitor != (monitor_number - 1))
-			{
-				skip = 1;
-			}
+			verbose = 1;
 		}
-
-		int index = ((temperature) / 100)*3;
-
-		int current_monitor_xid = res->crtcs[current_monitor];
-		int size = XRRGetCrtcGammaSize(dpy, current_monitor_xid);
-
-		XRRCrtcGamma* current_monitor_gamma = XRRAllocGamma(size);
-
-		if(skip != 1)
-		{
-			for (int i = 0; i < size; i++) 
-			{
-				double gamma = 65535.0 * i / size;
-
-				current_monitor_gamma->red[i] = 	gamma * brightness * color_temperature[index];
-				current_monitor_gamma->green[i] = 	gamma * brightness * color_temperature[index+1];
-				current_monitor_gamma->blue[i] = 	gamma * brightness * color_temperature[index+2];
-			}
-
-			XRRSetCrtcGamma(dpy, current_monitor_xid, current_monitor_gamma);
-		}
-
-		XFree(current_monitor_gamma);
 	}
 
-	if(monitor_number > 0)
+	int index = ((temperature) / 100)*3;
+
+	int red_gamma = color_temperature[index] * (maximum_red/2);
+	int green_gamma = color_temperature[index + 1] * (maximum_green/2);
+	int blue_gamma = color_temperature[index + 2] * (maximum_blue/2);
+	int monitor_brightness = brightness * maximum_brightness;
+
+	char* set_monitor_red_gamma_cmd = malloc(1000);
+	char* set_monitor_green_gamma_cmd = malloc(1000);
+	char* set_monitor_blue_gamma_cmd = malloc(1000);
+	char* set_monitor_brightness_cmd = malloc(1000);
+
+	char* set_red_gamma = "ddccontrol -p -r 0x16 -w ";
+	char* set_green_gamma = "ddccontrol -p -r 0x18 -w ";
+	char* set_blue_gamma = "ddccontrol -p -r 0x1a -w ";
+	char* set_brightness = "ddccontrol -p -r 0x10 -w ";
+
+	char* skip_output = " >/dev/null 2>&1";
+	if(verbose != 0)
 	{
-		printf("Monitor %d\n", monitor_number);	
+		skip_output = "";
 	}
+
+	sprintf(set_monitor_red_gamma_cmd, "%s%d%s", set_red_gamma, red_gamma, skip_output);
+	sprintf(set_monitor_green_gamma_cmd, "%s%d%s", set_green_gamma, green_gamma, skip_output);
+	sprintf(set_monitor_blue_gamma_cmd, "%s%d%s", set_blue_gamma, blue_gamma, skip_output);
+	sprintf(set_monitor_brightness_cmd, "%s%d%s", set_brightness, monitor_brightness, skip_output);
+
+	if(verbose != 0)
+	{
+		printf("%s\n", set_monitor_red_gamma_cmd);
+		printf("%s\n", set_monitor_green_gamma_cmd);
+		printf("%s\n", set_monitor_blue_gamma_cmd);
+		printf("%s\n", set_monitor_brightness_cmd);
+	}
+
+	system(set_monitor_red_gamma_cmd); // Set Red
+	system(set_monitor_green_gamma_cmd); // Set Green
+	system(set_monitor_blue_gamma_cmd); // Set Blue
+	system(set_monitor_brightness_cmd); // Set Brightness
 
 	printf("Temperature set to %dK\n", temperature);
 	printf("Brightness  set to %d%%\n", (int)(brightness * 100));
