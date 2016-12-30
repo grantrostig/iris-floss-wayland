@@ -24,7 +24,7 @@ sudo dnf install libddccontrol-dev ddccontrol
 ```
 
 
-This will install ddccontrol. Then
+This will install ddccontrol, for other distributions install the corresponding package. Then
 
 ```
 make
