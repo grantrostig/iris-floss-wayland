@@ -4,7 +4,7 @@ Floss is implementation of blue light reduction software like Iris, f.lux, Redsh
 This version of Iris Floss is the only one that works with Wayland and Mir. It will also run with X11, but if you are using X11 prefer the original version
 https://github.com/danielng01/iris-floss
 
-Iris Floss for Wayland works thanкs to DDC/CI protocol and DDCControl
+Iris Floss for Wayland works thanks to DDC/CI protocol and DDCControl
 
 
 Since this project is open source you need to build it from source. To build Iris Floss
