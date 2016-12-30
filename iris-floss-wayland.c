@@ -138,7 +138,7 @@ int main(int argc, char **argv)
 {
 	if(geteuid() != 0)
 	{
-		printf("You must run this program with \"sudo\"\n");
+		printf("You must run this program as Root\n");
 		return -1;
 	}
 
